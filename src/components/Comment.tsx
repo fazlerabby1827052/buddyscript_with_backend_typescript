@@ -63,6 +63,9 @@ const Comment:React.FC<any>=({com})=> {
                 
                 
             }
+            else{
+              alert("your reply is empty")
+            }
             (e.target as HTMLTextAreaElement).value="";
             (e.target as HTMLTextAreaElement).blur();
         }

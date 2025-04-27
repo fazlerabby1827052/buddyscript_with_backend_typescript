@@ -193,6 +193,7 @@ export default function Registration() {
                                 type="text" name="user"
                                 value={formData.user}
                                 onChange={changehandle}
+                                required
                                 className="form-control _social_registration_input"
                               />
                             </div>
@@ -206,6 +207,7 @@ export default function Registration() {
                                 type="password" name="password"
                                 value={formData.password}
                                 onChange={changehandle} 
+                                required
                                 className="form-control _social_registration_input"
                               />
                             </div>
@@ -219,6 +221,7 @@ export default function Registration() {
                                 type="password" name="confirmpassword"
                                 value={formData.confirmpassword}
                                 onChange={changehandle}
+                                required
                                 className="form-control _social_registration_input"
                               />
                             </div>

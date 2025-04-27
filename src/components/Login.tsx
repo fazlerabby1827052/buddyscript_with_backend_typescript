@@ -147,6 +147,7 @@ export default function Login() {
                             type="text"
                             name="user"
                             onChange={changehandle}
+                            required
                             value={formData.user}
                             className="form-control _social_login_input"
                           />
@@ -160,6 +161,7 @@ export default function Login() {
                           <input
                             type="password"
                             name="password"
+                            required
                             onChange={changehandle}
                             value={formData.password}
                             className="form-control _social_login_input"

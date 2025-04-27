@@ -9,6 +9,8 @@ import './tooltip.css'
 import axios from "axios";
 import conf from "../conf/conf";
 import { getTimeAgo } from "../utils/localstorage";
+import { Button, Modal, Spin } from "antd";
+import ModalEdit from "./ModalEdit";
 
 
 
@@ -16,10 +18,12 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
   // console.log(obj)
   const [commenttoggle,setcommenttoggle]=useState(true);
   const allpost=useSelector((state:any)=>state.counter.allpost);
+
+  
   
   
   // const [posttoggle, setposttoggle] = useState(false);
-  const [commentload,setcommentload]=useState(true)
+  const [commentload,setcommentload]=useState(true);
   const [loading, setloading] = useState(false);
   const commentbox = useRef<HTMLTextAreaElement>(null);
   const [likedUsername,setlikedusername]=useState<string[]>([]);
@@ -27,16 +31,22 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
   const [numberofcomment,setnumberofcomment]=useState(0);
   const [comment,setcomment]=useState<any>([]);
   const dispatch=useDispatch();
-  const [myLikeState,setmylikestate]=useState(0)
+  const [myLikeState,setmylikestate]=useState(0);
   useEffect(()=>{
     axios.post(`${conf.apiUrl}/checklike`,{postId:obj.id},{withCredentials:true}).then(res=>{setmylikestate(res.data)});
     axios.post(`${conf.apiUrl}/like/user`,{postId:obj.id},{withCredentials:true}).then(res=>{setlikedusername(res.data)});
     axios.post(`${conf.apiUrl}/like/count`,{postId:obj.id},{withCredentials:true}).then(res=>{setnumberoflike(res.data)})
     axios.post(`${conf.apiUrl}/numberofcomment`,{postId:obj.id},{withCredentials:true}).then(res=>{setnumberofcomment(res.data)})
-    axios.post(`${conf.apiUrl}/comment/post`,{postId:obj.id},{withCredentials:true}).then(res=>{setcomment(res.data)})
+    axios.post(`${conf.apiUrl}/comment/post`,{postId:obj.id},{withCredentials:true}).then(res=>{
+      setcomment(res.data);
+      
+    });
+    
 
     setloading(true)
-  },[])
+  },[]);
+  // console.log()
+  
 
 
   // console.log(myLikeState)
@@ -48,7 +58,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
   const posttogglehandle = () => {
     // let pt = posttoggle;
     // setposttoggle(!pt);
-    const sz=posttoggle.length;
+    const sz=posttoggle?.length;
     const narr=Array(sz).fill(false);
     narr[id]=posttoggle[id]?false:true;
     setposttoggle(narr);
@@ -109,6 +119,11 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
         (e.target as HTMLTextAreaElement).blur();
         setcommenttoggle(!commenttoggle);
       }
+      else{
+        alert("Your comment is empty");
+        (e.target as HTMLTextAreaElement).value = "";
+        (e.target as HTMLTextAreaElement).blur();
+      }
     }
   };
 
@@ -125,7 +140,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
       const response = await axios.post(`${conf.apiUrl}/post/delete`,{postId:obj.id},{withCredentials:true})
       if(response){
         dispatch(deletepost(obj));
-        const sz=allpost.length;
+        const sz=allpost?.length;
         const narr=Array(sz).fill(false);
         setposttoggle(narr);
       }
@@ -145,7 +160,8 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
     //   alert("You can't delete others post");
     //   return;
     // }
-    const promptitem = prompt("Edit this post", obj.text);
+    const promptitem = prompt("Edit this post", obj.content);
+    console.log(obj)
     if (promptitem === null || promptitem.trim() === "") {
       alert("Please write something");
       return;
@@ -155,7 +171,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
       const response= await axios.post(`${conf.apiUrl}/post/update`,{content:promptitem,postId:obj.id},{withCredentials:true})
       const nobj={...obj,content:promptitem}
       dispatch(editpost(nobj));
-      const sz=allpost.length;
+      const sz=allpost?.length;
         const narr=Array(sz).fill(false);
         setposttoggle(narr);
 
@@ -313,6 +329,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
                             href=""
 
                             onClick={handleedit}
+                            
                             className="_feed_timeline_dropdown_link"
                           >
                             <span>
@@ -341,6 +358,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
                             </span>
                             Edit Post
                           </a>
+                          
                         </li>
                         <li className="_feed_timeline_dropdown_item">
                           <a
@@ -518,7 +536,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
             </button>
           </div>
           <div className="_feed_inner_timeline_cooment_area">
-            <div className={`_feed_inner_comment_box ${commenttoggle?'displayhidden':''}`}>
+            <div className={`_feed_inner_comment_box ${commenttoggle?'displayhidden':``}`}>
               <form className="_feed_inner_comment_box_form">
                 <div className="_feed_inner_comment_box_content">
                   <div className="_feed_inner_comment_box_content_image">
@@ -598,7 +616,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
             })
           }
 
-          </div>:<></>}
+          </div>:<Spin/>}
 
           
         </div>
