@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Reply from "./Reply";
 import axios from "axios";
 import conf from "../conf/conf";
-import { getTimeAgo } from "../utils/localstorage";
+
 
 const Comment:React.FC<any>=({com})=> {
     
@@ -21,8 +21,9 @@ const Comment:React.FC<any>=({com})=> {
     // console.log(com)
 
     useEffect(()=>{
-      axios.post(`${conf.apiUrl}/reply/comment`,{commentId:com.id},{withCredentials:true}).then(res=>{setreply(res.data)});
-
+      
+      
+      
       setloading(false);
     },[])
 
@@ -51,7 +52,10 @@ const Comment:React.FC<any>=({com})=> {
                         return reply;
                       }
                     });
-                    setreply(filterdata);
+                    if(commenttoggle===false){
+                      setreply(filterdata);
+                    }
+                    
 
                 }
                 catch{
@@ -117,9 +121,15 @@ const Comment:React.FC<any>=({com})=> {
                 <li>
                   <span onClick={()=>{
                     commentref.current?.focus();
+                    if(commenttoggle===true){
+                      axios.post(`${conf.apiUrl}/reply/comment`,{commentId:com.id},{withCredentials:true}).then(res=>{setreply(res.data)});
+                    }
+                    else{
+                      setreply([])
+                    }
                     setcommenttoggle(!commenttoggle)
                     
-                  }}>Reply.</span>
+                  }}>{commenttoggle?'Show reply':'Hide reply'}</span>
                 </li>
                 <li>
                   {/* <span>Share</span> */}
@@ -142,15 +152,11 @@ const Comment:React.FC<any>=({com})=> {
             }
         })} */}
 
-        {
-          reply.map((element:any,index:number)=>(
-            <Reply element={element} key={index}/>
-          ))
-        }
+        
 
 
 
-        <div className={`_feed_inner_comment_box ${commenttoggle?'displayhidden':''}`}>
+        <div className={`_feed_inner_comment_box `}>
           <form className="_feed_inner_comment_box_form">
             <div className="_feed_inner_comment_box_content">
               <div className="_feed_inner_comment_box_content_image">
@@ -208,6 +214,16 @@ const Comment:React.FC<any>=({com})=> {
             </div>
           </form>
         </div>
+        <br/>
+
+
+        {
+          reply.map((element:any,index:number)=>(
+            <Reply element={element} key={index}/>
+          ))
+        }
+
+        
       </div>
     </div>
   </div>

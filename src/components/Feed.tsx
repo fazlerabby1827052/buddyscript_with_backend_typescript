@@ -16,7 +16,8 @@ export default function Feed() {
     axios.get(`${conf.apiUrl}/islogin`,{withCredentials:true}).then(res=>{
       dispatch(setcurrentuser({id:res.data.id,name:res.data.username}))
     }).catch(()=>{navigate('/login')})
-    axios.get(`${conf.apiUrl}/post`,{withCredentials:true}).then(res=>{dispatch(setpost(res.data))})
+    axios.get(`${conf.apiUrl}/post`,{withCredentials:true}).then(res=>{
+      dispatch(setpost(res.data))})
   },[])
   
   const currentUser=useSelector((state:any)=>state.counter.currentUser)

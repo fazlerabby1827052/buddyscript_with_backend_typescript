@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { singlepostInterface } from "../interface/Interface";
-import { deletepost, editpost, setpost } from "../redux/CounterSlice";
+import { addcomment, addlike, deletepost, editpost, removelike, setliker, setpost } from "../redux/CounterSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Comment from "./Comment";
 import 'react-tooltip/dist/react-tooltip.css'
@@ -26,21 +26,30 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
   const [commentload,setcommentload]=useState(true);
   const [loading, setloading] = useState(false);
   const commentbox = useRef<HTMLTextAreaElement>(null);
-  const [likedUsername,setlikedusername]=useState<string[]>([]);
-  const [numberoflike,setnumberoflike]=useState(0);
-  const [numberofcomment,setnumberofcomment]=useState(0);
+
+  // console.log(obj)
+
+  
+
+  // const usernames = obj.flatMap((item:any) =>
+  //   item.likes.flatMap((like:any) =>
+  //     like.user.map((u:any) => u.username)
+  //   )
+  // );
+  // console.log(usernames)
+  // console.log(obj)
+
+  const [likedUsername,setlikedusername]=useState<string[]>(obj.likers);
+  const [numberoflike,setnumberoflike]=useState(obj.totallike);
+  const [numberofcomment,setnumberofcomment]=useState(obj.commentcount);
+  const [myLikeState,setmylikestate]=useState(obj.likecheck);
+
   const [comment,setcomment]=useState<any>([]);
   const dispatch=useDispatch();
-  const [myLikeState,setmylikestate]=useState(0);
+  
   useEffect(()=>{
-    axios.post(`${conf.apiUrl}/checklike`,{postId:obj.id},{withCredentials:true}).then(res=>{setmylikestate(res.data)});
-    axios.post(`${conf.apiUrl}/like/user`,{postId:obj.id},{withCredentials:true}).then(res=>{setlikedusername(res.data)});
-    axios.post(`${conf.apiUrl}/like/count`,{postId:obj.id},{withCredentials:true}).then(res=>{setnumberoflike(res.data)})
-    axios.post(`${conf.apiUrl}/numberofcomment`,{postId:obj.id},{withCredentials:true}).then(res=>{setnumberofcomment(res.data)})
-    axios.post(`${conf.apiUrl}/comment/post`,{postId:obj.id},{withCredentials:true}).then(res=>{
-      setcomment(res.data);
-      
-    });
+    
+    
     
 
     setloading(true)
@@ -98,14 +107,21 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
               }
             });
             setnumberofcomment(numberofcomment+1)
-          setcomment(commentafterfilter);
-
+            dispatch(addcomment(obj.id))
+            if(commenttoggle===true){
+              
+            }
+            else{
+              setcomment(commentafterfilter);
+            }
+            
         }
         catch{
 
         }
         finally{
           setcommentload(true);
+          
         }
 
         
@@ -117,7 +133,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
 
         (e.target as HTMLTextAreaElement).value = "";
         (e.target as HTMLTextAreaElement).blur();
-        setcommenttoggle(!commenttoggle);
+        
       }
       else{
         alert("Your comment is empty");
@@ -151,7 +167,6 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
     finally{
       setloading(true);
     }
-    // setposttoggle(false);
   };
 
   const handleedit =async (e:any) => {
@@ -161,7 +176,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
     //   return;
     // }
     const promptitem = prompt("Edit this post", obj.content);
-    console.log(obj)
+    
     if (promptitem === null || promptitem.trim() === "") {
       alert("Please write something");
       return;
@@ -219,15 +234,21 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
       axios.post(`${conf.apiUrl}/dislike`,{postId:obj.id,userId:currentUserdetails.id},{withCredentials:true}).then((res)=>{
         setmylikestate(0);
         setnumberoflike(numberoflike-1);
+        dispatch(removelike(obj.id))
       });
       if(likedUsername.includes(currentUserdetails.name)){
-        axios.post(`${conf.apiUrl}/like/user`,{postId:obj.id},{withCredentials:true}).then(res=>{setlikedusername(res.data)});
+        axios.post(`${conf.apiUrl}/like/user`,{postId:obj.id},{withCredentials:true}).then(res=>{
+          dispatch(setliker({postId:obj.id,liker:res.data} as any))
+          setlikedusername(res.data)
+
+        });
       }
     }
     else{
       axios.post(`${conf.apiUrl}/like`,{postId:obj.id,userId:currentUserdetails.id},{withCredentials:true}).then(res=>{
         setmylikestate(1);
         setnumberoflike(numberoflike+1);
+        dispatch(addlike(obj.id))
       });
       const newlikers=[currentUserdetails.name,...likedUsername]
       const afterfilter=newlikers.filter((liker,index)=>{
@@ -235,6 +256,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
           return liker
         }
       })
+      dispatch(setliker({postId:obj.id,liker:afterfilter} as any))
       setlikedusername(afterfilter)
     }
 
@@ -411,8 +433,8 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
                 <button>
                   {/* {`${obj?.likedusername.length} like`} */}
                   {/* {obj.likedusername.length > 1 && `s`} */}
-                  {`${likedUsername.length} like`}
-                  {likedUsername.length>1?'s':''}
+                  {`${numberoflike} like`}
+                  {numberoflike>1?'s':''}
 
                 </button>
                 {/* {obj?.likedusername.length ? ( */}
@@ -479,8 +501,23 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
             </button>
             <button
               onClick={() => {
+                if(commenttoggle===true){
+                  if(numberofcomment){
+                    axios.post(`${conf.apiUrl}/comment/post`,{postId:obj.id},{withCredentials:true}).then(res=>{
+                      setcomment(res.data);
+                      
+                    });
+                  }
+                }
+                else{
+                  setcomment([]);
+                }
+
                 setcommenttoggle(!commenttoggle);
                 commentbox.current?.focus();
+                
+                
+                
                   
                 
               }}
@@ -508,7 +545,8 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
                       d="M6.938 9.313h7.125M10.5 14.063h3.563"
                     ></path>
                   </svg>
-                  Comment
+                  {" "}
+                  {commenttoggle?"show comment":"hide comment"}
                 </span>
               </span>
             </button>
@@ -536,7 +574,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
             </button>
           </div>
           <div className="_feed_inner_timeline_cooment_area">
-            <div className={`_feed_inner_comment_box ${commenttoggle?'displayhidden':``}`}>
+            <div className={`_feed_inner_comment_box `}>
               <form className="_feed_inner_comment_box_form">
                 <div className="_feed_inner_comment_box_content">
                   <div className="_feed_inner_comment_box_content_image">
@@ -609,14 +647,14 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
             }
           })} */}
 
-          {commentload?<div>
+          
           {
             comment?.map((com:any,index:number)=>{
               return <Comment  com={com}   key={index} />
             })
           }
 
-          </div>:<Spin/>}
+          
 
           
         </div>
