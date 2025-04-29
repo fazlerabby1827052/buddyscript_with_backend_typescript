@@ -9,11 +9,13 @@ interface CurrentUserInterface{
 interface StateType{
   allpost:any[]
   currentUser: any
+  numberofpost:number
 }
 
 const initialState:StateType={
   allpost:[],
-  currentUser:{id:-1,name:""}
+  currentUser:{id:-1,name:""},
+  numberofpost:0
 }
 
 
@@ -79,12 +81,22 @@ export const counterSlice = createSlice({
           state.allpost[index].likers=pl.liker;
         }
       }
+      ,
+      setnumberofpost:(state,action)=>{
+        state.numberofpost=action.payload
+      },
+      addpostnumber:(state)=>{
+        state.numberofpost=state.numberofpost+1
+      },
+      removepostnumber:(state)=>{
+        state.numberofpost=state.numberofpost-1
+      }
     }
   })
   
   
   
   // Action creators are generated for each case reducer function
-  export const { setpost,setcurrentuser,addpost,editpost,deletepost,addlike,removelike,addcomment,setliker } = counterSlice.actions
+  export const { setpost,setcurrentuser,addpost,editpost,deletepost,addlike,removelike,addcomment,setliker,setnumberofpost,addpostnumber,removepostnumber} = counterSlice.actions
   
   export default counterSlice.reducer

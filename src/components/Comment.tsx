@@ -41,6 +41,8 @@ const Comment:React.FC<any>=({com})=> {
                 //     data:trimdata,
                 //     creator:cu
                 //   }
+                (e.target as HTMLTextAreaElement).value="";
+                (e.target as HTMLTextAreaElement).blur();
 
                 // }))
                 setloading(true);
@@ -75,8 +77,7 @@ const Comment:React.FC<any>=({com})=> {
         }
         
     }
-  return loading?<></>:<div>
-  <div className="_timline_comment_main">
+  return (<div className="_timline_comment_main">
     <div className="_comment_main">
       <div className="_comment_image">
         <a href="profile.html" className="_comment_image_link">
@@ -219,15 +220,15 @@ const Comment:React.FC<any>=({com})=> {
 
         {
           reply.map((element:any,index:number)=>(
-            <Reply element={element} key={index}/>
+            <Reply element={element} key={element.id}/>
           ))
         }
 
         
       </div>
     </div>
-  </div>
-</div>;
+  </div>)
+
 }
 
 export default Comment

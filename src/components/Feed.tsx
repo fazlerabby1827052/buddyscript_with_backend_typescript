@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import axios from "axios";
 import conf from "../conf/conf";
-import { setcurrentuser, setpost } from "../redux/CounterSlice";
+import { setcurrentuser, setnumberofpost, setpost } from "../redux/CounterSlice";
 
 
 
@@ -16,8 +16,14 @@ export default function Feed() {
     axios.get(`${conf.apiUrl}/islogin`,{withCredentials:true}).then(res=>{
       dispatch(setcurrentuser({id:res.data.id,name:res.data.username}))
     }).catch(()=>{navigate('/login')})
-    axios.get(`${conf.apiUrl}/post`,{withCredentials:true}).then(res=>{
-      dispatch(setpost(res.data))})
+    axios.get(`${conf.apiUrl}/post/1`,{withCredentials:true}).then(res=>{
+      // console.log(res.data)
+      dispatch(setpost(res.data.res));
+      dispatch(setnumberofpost(res.data.numberofposts));
+    
+    });
+      
+      
   },[])
   
   const currentUser=useSelector((state:any)=>state.counter.currentUser)

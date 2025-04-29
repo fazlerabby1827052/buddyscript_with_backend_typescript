@@ -1,16 +1,15 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
-import { singlepostInterface } from "../interface/Interface";
-import { addcomment, addlike, deletepost, editpost, removelike, setliker, setpost } from "../redux/CounterSlice";
+
+import { addcomment, addlike, deletepost, editpost, removelike, setliker, setnumberofpost, setpost } from "../redux/CounterSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Comment from "./Comment";
 import 'react-tooltip/dist/react-tooltip.css'
 import './tooltip.css'
-// import conf from '../conf/conf'
+
 import axios from "axios";
 import conf from "../conf/conf";
 import { getTimeAgo } from "../utils/localstorage";
-import { Button, Modal, Spin } from "antd";
-import ModalEdit from "./ModalEdit";
+
 
 
 
@@ -18,7 +17,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
   // console.log(obj)
   const [commenttoggle,setcommenttoggle]=useState(true);
   const allpost=useSelector((state:any)=>state.counter.allpost);
-
+  
   
   
   
@@ -47,13 +46,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
   const [comment,setcomment]=useState<any>([]);
   const dispatch=useDispatch();
   
-  useEffect(()=>{
-    
-    
-    
-
-    setloading(true)
-  },[]);
+  
   // console.log()
   
 
@@ -95,6 +88,8 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
         //   });
         //   allpostCopy[postIndex] = postCopy;
         // }
+        (e.target as HTMLTextAreaElement).value = "";
+        (e.target as HTMLTextAreaElement).blur();
 
         setcommentload(false)
         try{
@@ -155,7 +150,9 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
     try{
       const response = await axios.post(`${conf.apiUrl}/post/delete`,{postId:obj.id},{withCredentials:true})
       if(response){
-        dispatch(deletepost(obj));
+        // dispatch(deletepost(obj));
+        dispatch(setpost(response.data.res))
+        dispatch(setnumberofpost(response.data.numberofposts))
         const sz=allpost?.length;
         const narr=Array(sz).fill(false);
         setposttoggle(narr);
@@ -235,29 +232,33 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
         setmylikestate(0);
         setnumberoflike(numberoflike-1);
         dispatch(removelike(obj.id))
+        dispatch(setliker({postId:obj.id,liker:res.data} as any))
+        setlikedusername(res.data)
       });
-      if(likedUsername.includes(currentUserdetails.name)){
-        axios.post(`${conf.apiUrl}/like/user`,{postId:obj.id},{withCredentials:true}).then(res=>{
-          dispatch(setliker({postId:obj.id,liker:res.data} as any))
-          setlikedusername(res.data)
+      // if(likedUsername.includes(currentUserdetails.name)){
+      //   axios.post(`${conf.apiUrl}/like/user`,{postId:obj.id},{withCredentials:true}).then(res=>{
+      //     dispatch(setliker({postId:obj.id,liker:res.data} as any))
+      //     setlikedusername(res.data)
 
-        });
-      }
+      //   });
+      // }
     }
     else{
       axios.post(`${conf.apiUrl}/like`,{postId:obj.id,userId:currentUserdetails.id},{withCredentials:true}).then(res=>{
         setmylikestate(1);
         setnumberoflike(numberoflike+1);
-        dispatch(addlike(obj.id))
+        dispatch(addlike(obj.id));
+        dispatch(setliker({postId:obj.id,liker:res.data} as any))
+        setlikedusername(res.data)
       });
-      const newlikers=[currentUserdetails.name,...likedUsername]
-      const afterfilter=newlikers.filter((liker,index)=>{
-        if(index<10){
-          return liker
-        }
-      })
-      dispatch(setliker({postId:obj.id,liker:afterfilter} as any))
-      setlikedusername(afterfilter)
+      // const newlikers=[currentUserdetails.name,...likedUsername]
+      // const afterfilter=newlikers.filter((liker,index)=>{
+      //   if(index<10){
+      //     return liker
+      //   }
+      // })
+      // dispatch(setliker({postId:obj.id,liker:afterfilter} as any))
+      // setlikedusername(afterfilter)
     }
 
     
@@ -270,7 +271,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
   };
   return (
     <div>
-      {loading ? (
+      {/* {loading ? ( */}
         <div className="_feed_inner_timeline_post_area _b_radious6 _padd_b24 _padd_t24 _mar_b16">
           <div className="_feed_inner_timeline_content _padd_r24 _padd_l24">
             <div className="_feed_inner_timeline_post_top">
@@ -648,9 +649,9 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
           })} */}
 
           
-          {
+          { 
             comment?.map((com:any,index:number)=>{
-              return <Comment  com={com}   key={index} />
+              return <Comment  com={com}   key={com.id} />
             })
           }
 
@@ -658,9 +659,9 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
 
           
         </div>
-      ) : (
-        <div>loading...........</div>
-      )}
+      {/* // ) : (
+      //   <div>loading...........</div>
+      // )} */}
     </div>
   );
 };
