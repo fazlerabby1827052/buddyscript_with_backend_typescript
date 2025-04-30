@@ -9,15 +9,39 @@ import './tooltip.css'
 import axios from "axios";
 import conf from "../conf/conf";
 import { getTimeAgo } from "../utils/localstorage";
+import { Button, Modal } from "antd";
+import TextArea from "antd/es/input/TextArea";
+import Swal from "sweetalert2";
 
 
 
 
 const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => { 
+
+  const [editpost2,seteditpost]=useState(false)
   // console.log(obj)
   const [commenttoggle,setcommenttoggle]=useState(true);
   const allpost=useSelector((state:any)=>state.counter.allpost);
+  const [edittext,setedittext]=useState("");
   
+
+  const handlePostEdit=(e:any)=>{
+    e.preventDefault();
+    setedittext(obj.content)
+    seteditpost(true);
+    const sz=posttoggle?.length;
+    const narr=Array(sz).fill(false);
+    setposttoggle(narr);
+  }
+  
+  const handleaddmorecomment=()=>{
+    const page=(comment.length/10)+1;
+    axios.get(`${conf.apiUrl}/comment/${obj.id}/${page}`,{withCredentials:true}).then(res=>{
+      
+      setcomment([...comment,...res.data.res]);
+      setnumberofcomment(res.data.res2);
+    })
+  }
   
   
   
@@ -45,6 +69,41 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
 
   const [comment,setcomment]=useState<any>([]);
   const dispatch=useDispatch();
+
+
+  const handleOk=async()=>{
+    seteditpost(false);
+    const trimdata=edittext.trim();
+    if(trimdata.length){
+      if(trimdata===obj.content){
+        Swal.fire({title:"Your Post is not changed",position:"top-end",showConfirmButton:false,timer:1000,icon:'error'})
+        return;
+      }
+      try{
+        const response= await axios.post(`${conf.apiUrl}/post/update`,{content:trimdata,postId:obj.id},{withCredentials:true})
+        const nobj={...obj,content:trimdata}
+        dispatch(editpost(nobj));
+        const sz=allpost?.length;
+        const narr=Array(sz).fill(false);
+        setposttoggle(narr);
+        Swal.fire({title:"Post Updated",position:"top-end",showConfirmButton:false,timer:1000,icon:'success'})
+      }
+      catch{
+  
+      }
+    }
+    else{
+      seteditpost(false)
+      alert("Your post is empty")
+      
+    }
+  }
+
+  const handleCancel=()=>{
+    
+    Swal.fire({title:"Post not updated",position:"top-end",showConfirmButton:false,timer:1000,icon:'error'})
+    seteditpost(false)
+  }
   
   
   // console.log()
@@ -184,8 +243,8 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
       const nobj={...obj,content:promptitem}
       dispatch(editpost(nobj));
       const sz=allpost?.length;
-        const narr=Array(sz).fill(false);
-        setposttoggle(narr);
+      const narr=Array(sz).fill(false);
+      setposttoggle(narr);
 
     }
     catch{
@@ -200,7 +259,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
     //   allpostcopy[index].text = promptitem;
     // }
     // dispatch(setpost(allpostcopy))
-    setposttoggle(false);
+    // setposttoggle(false);
   };
 
   
@@ -232,8 +291,9 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
         setmylikestate(0);
         setnumberoflike(numberoflike-1);
         dispatch(removelike(obj.id))
-        dispatch(setliker({postId:obj.id,liker:res.data} as any))
-        setlikedusername(res.data)
+        dispatch(setliker({postId:obj.id,liker:res.data.res} as any))
+        setlikedusername(res.data.res);
+        setnumberoflike(res.data.res2);
       });
       // if(likedUsername.includes(currentUserdetails.name)){
       //   axios.post(`${conf.apiUrl}/like/user`,{postId:obj.id},{withCredentials:true}).then(res=>{
@@ -248,8 +308,9 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
         setmylikestate(1);
         setnumberoflike(numberoflike+1);
         dispatch(addlike(obj.id));
-        dispatch(setliker({postId:obj.id,liker:res.data} as any))
-        setlikedusername(res.data)
+        dispatch(setliker({postId:obj.id,liker:res.data.res} as any))
+        setlikedusername(res.data.res);
+        setnumberoflike(res.data.res2);
       });
       // const newlikers=[currentUserdetails.name,...likedUsername]
       // const afterfilter=newlikers.filter((liker,index)=>{
@@ -351,7 +412,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
                           <a
                             href=""
 
-                            onClick={handleedit}
+                            onClick={handlePostEdit}
                             
                             className="_feed_timeline_dropdown_link"
                           >
@@ -383,6 +444,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
                           </a>
                           
                         </li>
+                        
                         <li className="_feed_timeline_dropdown_item">
                           <a
                             href=""
@@ -504,8 +566,9 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
               onClick={() => {
                 if(commenttoggle===true){
                   if(numberofcomment){
-                    axios.post(`${conf.apiUrl}/comment/post`,{postId:obj.id},{withCredentials:true}).then(res=>{
-                      setcomment(res.data);
+                    axios.get(`${conf.apiUrl}/comment/${obj.id}/1`,{withCredentials:true}).then(res=>{
+                      setcomment(res.data.res);
+                      setnumberofcomment(res.data.res2);
                       
                     });
                   }
@@ -651,14 +714,30 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
           
           { 
             comment?.map((com:any,index:number)=>{
-              return <Comment  com={com}   key={com.id} />
+              return <Comment  com={com}    key={com.id} />
             })
           }
+          {
+            comment.length && comment.length!==numberofcomment?<Button  variant="solid" color="cyan" style={{ display: "block", margin: "0 auto" }} onClick={handleaddmorecomment}>
+              Load more comments
+            </Button>:<></>
+          }
+          
 
           
 
           
         </div>
+
+        <Modal title="Edit your post" open={editpost2} okText="Post" onOk={handleOk} onCancel={handleCancel}>
+
+          <TextArea value={edittext}
+          onChange={(e)=>setedittext(e.target.value)}
+          >
+
+          </TextArea>
+
+        </Modal>
       {/* // ) : (
       //   <div>loading...........</div>
       // )} */}

@@ -61,7 +61,7 @@ export default  function Post() {
         setloading(true)
         try{
           const res=await axios.post(`${conf.apiUrl}/post/create`,{content:postdata},{withCredentials:true})
-          dispatch(addpost(res.data[0]))
+          dispatch(setpost(res.data.res))
           const sz=allpost.length;
           const narr=Array(sz).fill(false);
           setposttoggle(narr);

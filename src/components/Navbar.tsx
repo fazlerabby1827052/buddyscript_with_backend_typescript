@@ -3,7 +3,7 @@ import {  useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import conf from "../conf/conf";
-import { setcurrentuser } from "../redux/CounterSlice";
+import { setcurrentuser, setpost } from "../redux/CounterSlice";
 // import { removecurrentuser } from "../redux/CounterSlice";
 
 export default function Navbar() {
@@ -18,7 +18,8 @@ export default function Navbar() {
     // dispatch(removecurrentuser())
     try{
       axios.get(`${conf.apiUrl}/logout`,{withCredentials:true})
-      dispatch(setcurrentuser({id:-1,name:""}))
+      dispatch(setcurrentuser({id:-1,name:""}));
+      dispatch(setpost([]));
       navigate("/login");
     }
     catch{
