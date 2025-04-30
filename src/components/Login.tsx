@@ -62,6 +62,9 @@ export default function Login() {
       if(error.response.status===400){
         Swal.fire({title:"Invalid user credentials",position:"top-end",showConfirmButton:false,timer:1500,icon:'error'})
       }
+      else{
+        Swal.fire({title:"Something went wrong",position:"top-end",showConfirmButton:false,timer:1500,icon:'error'})
+      }
     }
 
   };

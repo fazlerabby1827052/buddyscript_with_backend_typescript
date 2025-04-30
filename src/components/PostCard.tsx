@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 
-import { addcomment, addlike, deletepost, editpost, removelike, setliker, setnumberofpost, setpost } from "../redux/CounterSlice";
+import { addcomment, addlike, deletepost, editpost, removelike, setlike, setliker, setnumberofpost, setpost } from "../redux/CounterSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Comment from "./Comment";
 import 'react-tooltip/dist/react-tooltip.css'
@@ -251,15 +251,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
 
     }
 
-    // const pc=allpost;
-    // const allpostcopy = [...pc];
     
-    // const index = allpostcopy.findIndex((post) => post.timeofcreate === obj.timeofcreate);
-    // if (index != -1) {
-    //   allpostcopy[index].text = promptitem;
-    // }
-    // dispatch(setpost(allpostcopy))
-    // setposttoggle(false);
   };
 
   
@@ -267,25 +259,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
 
   const handlelike = () => {
 
-    // const np = allpost;
-    // const npc = np.map((post:singlepostInterface) => {
-    //   if (post.timeofcreate === obj.timeofcreate) {
-    //     if (post.likedusername.includes(cu)) {
-    //       const filteruser=post.likedusername.filter(liker=>liker!=cu);
-    //       // console.log(filteruser);
-    //       return {
-    //         ...post,
-    //         likedusername:filteruser
-    //       };
-    //     } else {
-    //       return {
-    //         ...post,
-    //         likedusername: [...post.likedusername, cu],
-    //       };
-    //     }
-    //   }
-    //   return post;
-    // });
+    
     if(myLikeState===1){
       axios.post(`${conf.apiUrl}/dislike`,{postId:obj.id,userId:currentUserdetails.id},{withCredentials:true}).then((res)=>{
         setmylikestate(0);
@@ -294,6 +268,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
         dispatch(setliker({postId:obj.id,liker:res.data.res} as any))
         setlikedusername(res.data.res);
         setnumberoflike(res.data.res2);
+        dispatch(setlike({postid:obj.id,like:res.data.res2} as any))
       });
       // if(likedUsername.includes(currentUserdetails.name)){
       //   axios.post(`${conf.apiUrl}/like/user`,{postId:obj.id},{withCredentials:true}).then(res=>{
@@ -311,6 +286,7 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
         dispatch(setliker({postId:obj.id,liker:res.data.res} as any))
         setlikedusername(res.data.res);
         setnumberoflike(res.data.res2);
+        dispatch(setlike({postid:obj.id,like:res.data.res2} as any))
       });
       // const newlikers=[currentUserdetails.name,...likedUsername]
       // const afterfilter=newlikers.filter((liker,index)=>{
@@ -511,7 +487,12 @@ const PostCard: React.FC<any> = ({ obj,posttoggle,setposttoggle,id }) => {
                 {/* )} */}
                 {likedUsername.length?(
                   <div className="tooltip">
-                    {likedUsername.map((liker,index)=>(<div key={index}>{liker}</div>))}
+                    {likedUsername.map((liker,index)=>(<div key={index}>{liker}</div>))
+                    }
+                    {
+                      numberoflike>10?<div>... more</div>:<></>
+                    }
+                    
                   </div>
                 ):
                 <></>}

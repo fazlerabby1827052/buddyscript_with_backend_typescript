@@ -90,13 +90,20 @@ export const counterSlice = createSlice({
       },
       removepostnumber:(state)=>{
         state.numberofpost=state.numberofpost-1
-      }
+      },setlike:(state,action:any)=>{
+        const {postid,like}=action.payload;
+        const index=state.allpost.findIndex(post=>post.id===postid);
+        if(index!==-1){
+          state.allpost[index].totallike=like
+          
+        }
+      },
     }
   })
   
   
   
   // Action creators are generated for each case reducer function
-  export const { setpost,setcurrentuser,addpost,editpost,deletepost,addlike,removelike,addcomment,setliker,setnumberofpost,addpostnumber,removepostnumber} = counterSlice.actions
+  export const {setlike, setpost,setcurrentuser,addpost,editpost,deletepost,addlike,removelike,addcomment,setliker,setnumberofpost,addpostnumber,removepostnumber} = counterSlice.actions
   
   export default counterSlice.reducer
